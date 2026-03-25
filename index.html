@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบตรวจสอบเลขพัสดุ - เพื่อนแท้ช่างแอร์แคเรียร์</title>
+    <!-- โหลด Tailwind CSS สำหรับจัดการความสวยงาม -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- โหลดฟอนต์ Prompt จาก Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Prompt', sans-serif;
+            background-color: #f3f4f6;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8 flex flex-col items-center">
+
+    <!-- ส่วนหน้าต่าง Login -->
+    <div id="loginSection" class="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 mt-10 md:mt-20">
+        <div class="bg-[#00205b] p-6 text-white text-center relative overflow-hidden">
+            <div class="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-white opacity-10"></div>
+            <div class="absolute bottom-0 left-0 -ml-8 -mb-8 w-24 h-24 rounded-full bg-white opacity-10"></div>
+            
+            <h1 class="text-2xl font-bold mb-1 tracking-wide text-[#00b0f0]">เข้าสู่ระบบ</h1>
+            <p class="text-blue-200 text-sm">เพื่อนแท้ช่างแอร์แคเรียร์</p>
+        </div>
+        <div class="p-6 md:p-8">
+            <form id="loginForm" class="space-y-5">
+                <div>
+                    <label for="loginUsername" class="block text-sm font-semibold text-[#00205b] mb-2">ชื่อผู้ใช้งาน (ID)</label>
+                    <input type="text" id="loginUsername" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-0 focus:border-[#00205b] transition-all outline-none text-gray-800 font-medium bg-gray-50 focus:bg-white" required>
+                </div>
+                <div>
+                    <label for="loginPassword" class="block text-sm font-semibold text-[#00205b] mb-2">รหัสผ่าน (Password)</label>
+                    <input type="password" id="loginPassword" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-0 focus:border-[#00205b] transition-all outline-none text-gray-800 font-medium bg-gray-50 focus:bg-white" required>
+                </div>
+                <div id="loginError" class="hidden text-red-500 text-sm font-medium text-center bg-red-50 p-2 rounded-lg border border-red-100">
+                    ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+                </div>
+                <button type="submit" class="w-full bg-[#00205b] hover:bg-[#00153f] text-white font-bold py-3 rounded-xl transition-colors shadow-md">
+                    เข้าสู่ระบบ
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- กล่องหลัก (ระบบตรวจสอบพัสดุ) -->
+    <div id="appSection" class="hidden w-full max-w-2xl bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+        
+        <!-- ส่วนหัว -->
+        <div class="bg-[#00205b] p-6 text-white text-center relative overflow-hidden">
+            <button onclick="logout()" class="absolute top-4 right-4 text-white text-sm hover:text-[#00b0f0] underline z-10 transition-colors">ออกจากระบบ</button>
+            <div class="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-white opacity-10"></div>
+            <div class="absolute bottom-0 left-0 -ml-8 -mb-8 w-24 h-24 rounded-full bg-white opacity-10"></div>
+            
+            <h1 class="text-2xl font-bold mb-1 tracking-wide text-[#00b0f0]">เพื่อนแท้ช่างแอร์แคเรียร์</h1>
+            <h2 class="text-lg text-white font-medium mb-2">ระบบตรวจสอบสถานะของรางวัล</h2>
+            <p class="text-blue-200 text-sm">ค้นหาเลขพัสดุและการจัดส่งของคุณ</p>
+        </div>
+
+        <!-- ส่วนค้นหา -->
+        <div class="p-6 md:p-8">
+            <form id="searchForm" class="space-y-4">
+                <div>
+                    <label for="searchInput" class="block text-sm font-semibold text-[#00205b] mb-2">
+                        ค้นหาจากชื่อ หรือ เบอร์โทรศัพท์
+                    </label>
+                    <div class="relative">
+                        <input type="text" id="searchInput" 
+                            class="w-full pl-4 pr-14 py-3 border-2 border-gray-200 rounded-xl focus:ring-0 focus:border-[#00205b] transition-all outline-none text-gray-800 font-medium bg-gray-50 focus:bg-white"
+                            placeholder="เช่น อิทธิชัย หรือ 0903328160" required>
+                        <button type="submit" 
+                            class="absolute right-1.5 top-1.5 bottom-1.5 bg-[#00205b] hover:bg-[#00153f] text-white px-4 rounded-lg transition-colors flex items-center justify-center shadow-md">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- แสดงสถานะกำลังโหลด -->
+            <div id="loading" class="hidden mt-8 text-center">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-[#00205b] border-t-transparent"></div>
+                <p class="mt-2 text-[#00205b] font-medium">กำลังค้นหาข้อมูล...</p>
+            </div>
+
+            <!-- ข้อความแจ้งเตือนเมื่อไม่พบข้อมูล -->
+            <div id="noResult" class="hidden mt-8 text-center p-6 bg-red-50 rounded-xl border border-red-100">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-red-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <h3 class="text-lg font-medium text-red-800">ไม่พบข้อมูล</h3>
+                <p class="text-red-600 text-sm mt-1">กรุณาตรวจสอบการสะกดชื่อหรือเบอร์โทรศัพท์อีกครั้ง</p>
+                <div id="debugInfo" class="mt-4 p-3 bg-white rounded border border-gray-200 text-left text-xs text-gray-600 font-mono whitespace-pre-wrap overflow-x-auto"></div>
+            </div>
+
+            <!-- พื้นที่แสดงผลลัพธ์ -->
+            <div id="resultContainer" class="mt-8 space-y-4">
+                <!-- ข้อมูลจะถูกนำมาแสดงที่นี่ -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CONFIG = {
+            // นำลิงก์ที่ได้จาก "เผยแพร่ทางเว็บ (Publish to web)" -> CSV มาวางทับข้อความด้านล่างนี้
+            GOOGLE_SHEET_CSV_URL: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQwJoYRpF5EvylaHOB8xUGgmYVpaO8kWGjmWRvFlcDhzMkB1XyHfTYnoCAiK--0eiixK6dVBtkwgyiG/pub?output=csv" 
+        };
+
+        // --- ระบบ Login ---
+        const loginForm = document.getElementById('loginForm');
+        const loginUsername = document.getElementById('loginUsername');
+        const loginPassword = document.getElementById('loginPassword');
+        const loginError = document.getElementById('loginError');
+        const loginSection = document.getElementById('loginSection');
+        const appSection = document.getElementById('appSection');
+
+        if (sessionStorage.getItem('isLoggedIn') === 'true') {
+            loginSection.classList.add('hidden');
+            appSection.classList.remove('hidden');
+        }
+
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (loginUsername.value.trim() === 'BCT' && loginPassword.value.trim() === 'bgrimmcarrier') {
+                sessionStorage.setItem('isLoggedIn', 'true');
+                loginSection.classList.add('hidden');
+                appSection.classList.remove('hidden');
+                loginError.classList.add('hidden');
+            } else {
+                loginError.classList.remove('hidden');
+            }
+        });
+
+        function logout() {
+            sessionStorage.removeItem('isLoggedIn');
+            loginUsername.value = '';
+            loginPassword.value = '';
+            loginSection.classList.remove('hidden');
+            appSection.classList.add('hidden');
+            document.getElementById('resultContainer').innerHTML = '';
+            document.getElementById('searchInput').value = '';
+        }
+
+        // --- ระบบอ่านไฟล์ CSV ---
+        function parseCSV(text) {
+            const rows = [];
+            let currentRow = [];
+            let currentCell = '';
+            let insideQuotes = false;
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+                const nextChar = text[i + 1];
+                if (char === '"' && insideQuotes && nextChar === '"') {
+                    currentCell += '"'; i++; 
+                } else if (char === '"') {
+                    insideQuotes = !insideQuotes;
+                } else if (char === ',' && !insideQuotes) {
+                    currentRow.push(currentCell); currentCell = '';
+                } else if ((char === '\n' || char === '\r') && !insideQuotes) {
+                    if (char === '\r' && nextChar === '\n') i++; 
+                    currentRow.push(currentCell); rows.push(currentRow);
+                    currentRow = []; currentCell = '';
+                } else {
+                    currentCell += char;
+                }
+            }
+            if (currentRow.length > 0 || currentCell !== '') {
+                currentRow.push(currentCell); rows.push(currentRow);
+            }
+            return rows;
+        }
+
+        const searchForm = document.getElementById('searchForm');
+        const searchInput = document.getElementById('searchInput');
+        const loadingDiv = document.getElementById('loading');
+        const noResultDiv = document.getElementById('noResult');
+        const resultContainer = document.getElementById('resultContainer');
+        const debugInfo = document.getElementById('debugInfo');
+
+        searchForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const keyword = searchInput.value.trim();
+            if(!keyword) return;
+
+            resultContainer.innerHTML = '';
+            noResultDiv.classList.add('hidden');
+            loadingDiv.classList.remove('hidden');
+            debugInfo.innerHTML = '';
+
+            try {
+                // ตรวจสอบว่าใส่ URL มาหรือยัง
+                if (CONFIG.GOOGLE_SHEET_CSV_URL === "วางลิงก์_CSV_ที่นี่" || !CONFIG.GOOGLE_SHEET_CSV_URL.startsWith("http")) {
+                    throw new Error("กรุณานำลิงก์จาก 'เผยแพร่ทางเว็บ (CSV)' มาใส่ในโค้ดตรง CONFIG.GOOGLE_SHEET_CSV_URL ก่อนครับ");
+                }
+
+                let data = [];
+                const timestamp = new Date().getTime();
+                
+                // ใช้ลิงก์ CSV ตรงๆ และต่อท้ายด้วยเวลาเพื่อกันแคช
+                const separator = CONFIG.GOOGLE_SHEET_CSV_URL.includes('?') ? '&' : '?';
+                const sheetUrl = `${CONFIG.GOOGLE_SHEET_CSV_URL}${separator}t=${timestamp}`;
+                
+                const response = await fetch(sheetUrl, { cache: 'no-store' });
+                if (!response.ok) throw new Error(`เชื่อมต่อไม่สำเร็จ HTTP Error: ${response.status}`);
+                
+                const text = await response.text();
+                
+                if (text.trim().toLowerCase().includes('<html') || text.trim().toLowerCase().includes('<!doctype')) {
+                    throw new Error("Google ยังคงส่งหน้าเว็บมาให้ โปรดตรวจสอบให้แน่ใจว่าตอนเผยแพร่ทางเว็บ ได้เลือกรูปแบบเป็น 'ค่าที่คั่นด้วยจุลภาค (.csv)' แล้ว");
+                }
+                
+                let rows = parseCSV(text).filter(row => row.join('').trim() !== '');
+                
+                if(rows.length < 2) {
+                    throw new Error(`ไฟล์ที่โหลดมาว่างเปล่า`);
+                }
+
+                let headerRowIndex = 0;
+                for (let i = 0; i < Math.min(rows.length, 5); i++) {
+                    const rowStr = rows[i].join('').replace(/\s+/g, '').toLowerCase();
+                    if (rowStr.includes('ชื่อ') || rowStr.includes('พัสดุ') || rowStr.includes('โทร') || rowStr.includes('id')) {
+                        headerRowIndex = i;
+                        break;
+                    }
+                }
+
+                const headers = rows[headerRowIndex].map(col => col ? col.replace(/^[\uFEFF\xA0]+|[\uFEFF\xA0]+$/g, '').trim() : '');
+                
+                // อัปเดตใหม่: จัดการข้อมูลให้สมบูรณ์ก่อนนำไปทำเป็นข้อมูลดิบ (แก้ไขปัญหาเบอร์โทร 0 หายจากต้นทาง)
+                data = rows.slice(headerRowIndex + 1).map(row => {
+                    let obj = {};
+                    row.forEach((cell, index) => {
+                        if(headers[index]) {
+                            let val = cell ? cell.trim() : '';
+                            // จัดการเติม 0 ให้เบอร์โทรศัพท์ (ถ้ามันหายไปจากการส่งของ Google)
+                            if((headers[index].includes('โทร') || headers[index].includes('phone')) && val) {
+                                val = val.replace(/[^0-9]/g, ''); 
+                                if(!val.startsWith('0') && val.length > 0) val = '0' + val;
+                            }
+                            obj[headers[index]] = val;
+                        }
+                    });
+                    
+                    // สร้าง _rawText โดยลบช่องว่าง ขีด และอักขระพิเศษที่ซ่อนอยู่ออกทั้งหมดเพื่อความแม่นยำ
+                    obj._rawText = Object.values(obj).join(' ').replace(/[\s\-\u200B\u200C\u200D\uFEFF]/g, '').toLowerCase(); 
+                    return obj;
+                });
+
+                // การค้นหาแบบแยกคำ (Split Search) รองรับการพิมพ์เว้นวรรค หรือสลับตำแหน่งคำ
+                const searchTerms = keyword.trim().split(/\s+/).filter(k => k.length > 0);
+                
+                const results = data.filter(item => {
+                    if (!item._rawText) return false;
+                    
+                    // ทุกๆ คำที่ผู้ใช้พิมพ์มา ต้องมีอยู่ในข้อมูลแถวนั้น (ค้นหาเจอแน่นอนแม้จะเว้นวรรคไม่ตรง)
+                    return searchTerms.every(term => {
+                        const cleanTerm = term.replace(/[\s\-\u200B\u200C\u200D\uFEFF]/g, '').toLowerCase();
+                        return item._rawText.includes(cleanTerm);
+                    });
+                });
+
+                loadingDiv.classList.add('hidden');
+
+                if(results.length > 0) {
+                    renderResults(results);
+                } else {
+                    noResultDiv.classList.remove('hidden');
+                    debugInfo.innerHTML = `<strong class="text-blue-600">วิเคราะห์ปัญหา (Debug Mode)</strong><br>
+- โหลดข้อมูลตารางมาได้: <b>${data.length} แถว</b><br>
+<span class="text-red-500">* ค้นหาคำว่า "${keyword}" ในตารางนี้ไม่เจอครับ *</span><br>
+<span class="text-gray-500 text-xs mt-2 block">แนะนำ: ลองค้นหาด้วยรหัส ID (เช่น 23303) หรือพิมพ์ชื่อสั้นๆ (เช่น จตุรพร) ดูอีกครั้งครับ</span>`;
+                }
+
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                loadingDiv.classList.add('hidden');
+                noResultDiv.classList.remove('hidden');
+                debugInfo.innerHTML = `<strong class="text-red-600">[Error] แจ้งเตือนข้อผิดพลาด</strong><br>${error.message}`;
+            }
+        });
+
+        function renderResults(results) {
+            resultContainer.innerHTML = results.map(item => {
+                const getVal = (keywords) => {
+                    for(let k of keywords) {
+                        for(let h in item) {
+                            if(h !== '_rawText' && h.toLowerCase().replace(/\s+/g,'').includes(k)) return item[h];
+                        }
+                    }
+                    return '';
+                };
+
+                const rewardName = getVal(['ชื่อของรางวัล', 'ชื่อรางวัล', 'ของรางวัล']) || '-';
+                const userName = getVal(['ชื่อ-นามสกุล', 'ชื่อนามสกุล', 'ชื่อผู้รับ', 'ชื่อ']) || '-';
+                const phone = getVal(['โทร', 'phone']) || '-';
+                const address = getVal(['ที่อยู่', 'จัดส่ง']) || '-';
+                const zipCode = getVal(['รหัสไปรษณีย์', 'ไปรษณีย์', 'zip']) || '';
+                const tracking = getVal(['หมายเลขพัสดุ', 'เลขพัสดุ', 'tracking', 'พัสดุ']) || '';
+                const updateDate = getVal(['วันที่ตรวจสอบ', 'วันที่อัพเดท', 'อัปเดต', 'ตรวจสอบ', 'วันที่ตรวจ']) || '';
+
+                return `
+                <div class="border-2 border-gray-100 rounded-xl p-5 bg-white shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-2 h-full ${tracking ? 'bg-[#00b0f0]' : 'bg-yellow-500'}"></div>
+                    <div class="mb-4 pl-3">
+                        <h3 class="font-bold text-lg text-[#00205b]">${rewardName}</h3>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-4 pl-4 mb-4 space-y-3 border border-gray-100">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">ชื่อผู้รับ</p>
+                                <p class="font-semibold text-gray-800">${userName}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">เบอร์โทรศัพท์</p>
+                                <p class="font-semibold text-gray-800">${phone}</p>
+                            </div>
+                        </div>
+                        <div class="pt-2 border-t border-gray-200">
+                            <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">ที่อยู่จัดส่ง</p>
+                            <p class="font-medium text-gray-800 text-sm leading-relaxed">
+                                ${address} <span class="font-semibold text-[#00205b]">${zipCode}</span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="bg-[#f5f8ff] rounded-lg p-4 pl-5 mt-4 border border-[#d6e4ff]">
+                        <p class="text-xs text-[#00205b] font-bold mb-1">หมายเลขพัสดุ (Tracking Number)</p>
+                        <div class="flex items-center justify-between">
+                            <p class="text-xl font-bold text-[#00b0f0] tracking-wider">${tracking || 'อยู่ระหว่างจัดเตรียม'}</p>
+                            ${tracking ? `
+                                <button onclick="copyToClipboard('${tracking}')" class="text-[#00205b] hover:bg-[#00205b] hover:text-white p-2 bg-white rounded-md shadow-sm border border-[#00205b] text-sm font-semibold transition-colors duration-200">
+                                    คัดลอก
+                                </button>
+                            ` : ''}
+                        </div>
+                        ${updateDate ? `
+                        <div class="mt-3 pt-3 border-t border-[#d6e4ff]">
+                            <p class="text-sm text-gray-600">
+                                <span class="font-semibold text-[#00205b]">วันที่ตรวจสอบ:</span> ${updateDate}
+                            </p>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+            }).join('');
+        }
+
+        function copyToClipboard(text) {
+            const el = document.createElement('textarea');
+            el.value = text; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el);
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded shadow-lg text-sm transition-opacity duration-300 z-50';
+            toast.innerText = 'คัดลอกเลขพัสดุแล้ว: ' + text; document.body.appendChild(toast);
+            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => document.body.removeChild(toast), 300); }, 2000);
+        }
+    </script>
+</body>
+</html>
